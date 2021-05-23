@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.health">
+
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+
+    <uses-feature
+        android:name="android.hardware.sensor.accelerometer"
+        android:required="true" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Health">
+        <activity android:name=".AddEditSymptom"
+            android:theme="@style/AppTheme.CustomTheme"/>
+        <activity android:name=".SymptomsList"
+            android:launchMode="singleTop"
+            android:parentActivityName=".Health_Rates"/>
+
+        <service
+            android:name=".RespRate"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".Health_Rates"
+            android:launchMode="singleTop"
+            android:parentActivityName=".MainActivity"/>
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

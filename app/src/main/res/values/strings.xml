@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Health</string>
+    <string name="measure_health">Measure Health</string>
+    <string name="view_records">View Records</string>
+    <string name="asu_logo">ASU_Logo</string>
+    <string name="cse_535_assignment_1">CSE 535 - Assignment 1</string>
+    <string name="main_menu">Main Menu</string>
+    <string name="heart_rate">Heart Rate:</string>
+    <string name="unknown">----</string>
+    <string name="respiratory_rate">Respiratory Rate:</string>
+    <string name="selected_symptoms">Selected Symptoms:</string>
+    <string name="measure_heart_rate">Measure Heart Rate</string>
+    <string name="measure_respiratory_rate">Measure Respiratory Rate</string>
+    <string name="upload_signs">Upload Signs</string>
+    <string name="title_activity_select_symptoms">SelectSymptoms</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="submit">Submit</string>
+    <string name="please_confirm">Please Confirm</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="symptoms">Symptoms</string>
+    <string name="select_symptom">Select Symptom</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="search">Search</string>
+    <string name="plus">Plus</string>
+    <string name="none">None</string>
+    <string name="scale_it_from_0_5">Scale it from 0-5</string>
+    <string-array name="symptoms_array">
+        <item>Nausea</item>
+        <item>Headache</item>
+        <item>Diarrhea</item>
+        <item>Sore Throat</item>
+        <item>Fever</item>
+        <item>Muscle Ache</item>
+        <item>Loss of Smell or Taste</item>
+        <item>Cough</item>
+        <item>Shortness of Breath</item>
+        <item>Feeling Tired</item>
+    </string-array>
+</resources>
