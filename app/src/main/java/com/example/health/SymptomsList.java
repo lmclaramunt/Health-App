@@ -1,13 +1,5 @@
 package com.example.health;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NavUtils;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -20,7 +12,14 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Toast;
 
-import java.io.Serializable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NavUtils;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 
 
@@ -44,9 +43,6 @@ public class SymptomsList extends AppCompatActivity {
         setContentView(R.layout.activity_symptoms_list);
         Intent intent = getIntent();
         symptomList = intent.getParcelableArrayListExtra(SYMPTOMS_LIST);
-//        Bundle bundle = data.getExtras();
-//        symptoms = bundle.getParcelableArrayList(SymptomsList.SYMPTOMS_LIST);
-//        symptomList = new ArrayList<>();
         initializeRecyclerView();
     }
 

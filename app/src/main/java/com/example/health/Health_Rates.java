@@ -25,9 +25,9 @@ import java.util.ArrayList;
  */
 public class Health_Rates extends AppCompatActivity  {
     public static final int GET_SYMPTOMS_LIST = 0;
+    public static final int GET_HEART_RATE = 1;
     private Sensor heartSensor;
     private TextView txtHeartRate, txtRespRate, txtSymptoms;
-    private RecyclerView recyclerViewSym;
     private float respRate;
     private ArrayList<Symptom> symptoms;
     
@@ -65,6 +65,8 @@ public class Health_Rates extends AppCompatActivity  {
      * @param view - View
      */
     public void measureHeart(View view) {
+        Intent heartIntent = new Intent(this, HeartRate.class);
+        startActivityForResult(heartIntent, GET_HEART_RATE);
     }
 
 
@@ -83,9 +85,6 @@ public class Health_Rates extends AppCompatActivity  {
     public void launchSymptoms(View view) {
         Intent intent = new Intent(this, SymptomsList.class);
         intent.putParcelableArrayListExtra(SymptomsList.SYMPTOMS_LIST, symptoms);
-//        Bundle bundle = new Bundle();
-//        bundle.putParcelableArrayList(SymptomsList.SYMPTOMS_LIST, symptoms);
-//        intent.putExtras(bundle);
         startActivityForResult(intent, GET_SYMPTOMS_LIST);
     }
 
