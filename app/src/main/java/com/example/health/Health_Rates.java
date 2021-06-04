@@ -28,7 +28,7 @@ import java.util.Date;
  * Stores resutls in SQLite database
  */
 public class Health_Rates extends AppCompatActivity  {
-    Database db;        //SQLite
+    private Database db;        //SQLite
     public static final int GET_SYMPTOMS_LIST = 0;
     public static final int GET_HEART_RATE = 1;
     private TextView txtHeartRate, txtRespRate, txtSymptoms;

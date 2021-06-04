@@ -36,6 +36,18 @@
     <string name="_00">00</string>
     <string name="heart_rate_instructions">Place your finger on the camera lens, and try not to move it</string>
     <string name="upload">Upload</string>
+    <string name="bpm">BPM:</string>
+    <string name="symptoms_underline"><u>Symptoms</u></string>
+    <string name="nausea">Nausea:</string>
+    <string name="headache">Headache:</string>
+    <string name="diarrhea">Diarrhea:</string>
+    <string name="sore_throat">Sore Throat:</string>
+    <string name="fever">Fever:</string>
+    <string name="muscle_ache">Muscle Ache:</string>
+    <string name="loss_of_smell_or_taste">Loss of Smell or Taste:</string>
+    <string name="cough">Cough:</string>
+    <string name="shortness_of_breath">Shortness of Breath:</string>
+    <string name="feeling_tired">Feeling Tired:</string>
     <string-array name="symptoms_array">
         <item>Nausea</item>
         <item>Headache</item>
