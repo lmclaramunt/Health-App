@@ -29,8 +29,6 @@ public class Symptom implements Parcelable {
         this.rating = rating;
     }
 
-
-
     public String getName(){ return name; }
 
     public int getRating(){ return rating; }

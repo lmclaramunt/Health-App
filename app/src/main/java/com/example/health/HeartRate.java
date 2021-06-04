@@ -1,15 +1,8 @@
 package com.example.health;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
@@ -21,23 +14,21 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.sql.Timestamp;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 
 
 /**
@@ -45,19 +36,16 @@ import java.util.Map;
  * Measure user's heart rate using camera and flashlight
  */
 public class HeartRate extends AppCompatActivity {
-    public String usermail1;
-    private static final String TAG = "CameraActivity";
-    private TextureView textureView; //TextureView to deploy camera data
-    private String cameraId;
-    protected CameraDevice cameraDevice;
-    protected CameraCaptureSession cameraCaptureSessions;
-    protected CaptureRequest.Builder captureRequestBuilder;
-    private Size imageDimension;
-    private static final int REQUEST_CAMERA_PERMISSION = 1;
+    private TextureView txtureV;        //TextureView to deploy camera data
+    protected CameraDevice camDev;
+    protected CameraCaptureSession camCaptSess;
+    protected CaptureRequest.Builder captReq;
+    private Size measurements;
+    private static final int CAMERA_PERM = 1;
 
     // Thread handler member variables
-    private Handler mBackgroundHandler;
-    private HandlerThread mBackgroundThread;
+    private Handler backHandler;
+    private HandlerThread backThread;
 
     //Heart rate detector member variables
     public static int hrtratebpm;
@@ -67,24 +55,66 @@ public class HeartRate extends AppCompatActivity {
     private long [] mTimeArray;
     private int numCaptures = 0;
     private int mNumBeats = 0;
-    TextView tv;
+    TextView txt;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_heart_rate);
-        textureView =  findViewById(R.id.texture);
-        assert textureView != null;
-        textureView.setSurfaceTextureListener(textureListener);
+        txtureV =  findViewById(R.id.texture);
+        txtureV.setSurfaceTextureListener(textureListener);
         mTimeArray = new long [15];
-        tv = (TextView)findViewById(R.id.neechewalatext);
-
+        txt = findViewById(R.id.neechewalatext);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startBackgroundThread();
+        try {
+            openCamera();
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        if(camDev != null){
+            camDev.close();
+            camDev = null;
+        }
+        try {
+            stopBackgroundThread();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        super.onPause();
+    }
+
+    protected void startBackgroundThread() {
+        backThread = new HandlerThread("Camera_Thread");
+        backThread.start();
+        backHandler = new Handler(backThread.getLooper());
+    }
+
+    protected void stopBackgroundThread() throws InterruptedException {
+        backThread.quitSafely();
+        backThread.join();
+        backThread = null;
+        backHandler = null;
+    }
+
+
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            openCamera();
+            try {
+                openCamera();
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -98,8 +128,7 @@ public class HeartRate extends AppCompatActivity {
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-            Log.d(TAG, "onSurfaceTextureUpdated");
-            Bitmap bmp = textureView.getBitmap();
+            Bitmap bmp = txtureV.getBitmap();
             int width = bmp.getWidth();
             int height = bmp.getHeight();
             int[] pixels = new int[height * width];
@@ -140,45 +169,28 @@ public class HeartRate extends AppCompatActivity {
             mLastRollingAverage = mCurrentRollingAverage;
         }
     };
-    private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
+
+    private final CameraDevice.StateCallback stCallBack = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(CameraDevice camera) {
-            Log.e(TAG, "onOpened");
-            cameraDevice = camera;
+            camDev = camera;
             createCameraPreview();
         }
 
         @Override
         public void onDisconnected(CameraDevice camera) {
-            cameraDevice.close();
+            camDev.close();
         }
 
         @Override
         public void onError(CameraDevice camera, int error) {
-            if (cameraDevice != null)
-                cameraDevice.close();
-            cameraDevice = null;
+            if (camDev != null)
+                camDev.close();
+            camDev = null;
         }
     };
 
-    // onResume
-    protected void startBackgroundThread() {
-        mBackgroundThread = new HandlerThread("Camera Background");
-        mBackgroundThread.start();
-        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
-    }
-    // onPause
-    protected void stopBackgroundThread() {
-        mBackgroundThread.quitSafely();
-        try {
-            mBackgroundThread.join();
-            mBackgroundThread = null;
-            mBackgroundHandler = null;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
+    @SuppressLint("SetTextI18n")
     private void calcBPM() {
         int med;
         long [] timedist = new long [14];
@@ -188,128 +200,60 @@ public class HeartRate extends AppCompatActivity {
         Arrays.sort(timedist);
         med = (int) timedist[timedist.length/2];
         hrtratebpm= 60000/med;
-        addTodb();
-
-
-    }
-    private void addTodb()
-    {
-        Log.d("YAYYY","YAYYYYYYYYYAAAAAAAA="+hrtratebpm);
-        //FirebaseApp.initializeApp(LoginActivity.this);
-        TextView tv = (TextView)findViewById(R.id.neechewalatext);
+        TextView tv = findViewById(R.id.neechewalatext);
         tv.setText("Heart Rate = "+hrtratebpm+" BPM");
     }
 
     protected void createCameraPreview() {
         try {
-            SurfaceTexture texture = textureView.getSurfaceTexture();
-            assert texture != null;
-            texture.setDefaultBufferSize(imageDimension.getWidth(), imageDimension.getHeight());
+            SurfaceTexture texture = txtureV.getSurfaceTexture();
+            texture.setDefaultBufferSize(measurements.getWidth(), measurements.getHeight());
             Surface surface = new Surface(texture);
-            captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            captureRequestBuilder.addTarget(surface);
-            cameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+            captReq = camDev.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            captReq.addTarget(surface);
+            camDev.createCaptureSession(Collections.singletonList(surface), new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
-                    if (null == cameraDevice) {
-                        return;
-                    }
-                    cameraCaptureSessions = cameraCaptureSession;
-                    updatePreview();
+                        camCaptSess = cameraCaptureSession;
+                        captReq.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+                        captReq.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH);
+                        try {
+                            camCaptSess.setRepeatingRequest(captReq.build(), null, backHandler);
+                        } catch (CameraAccessException e) {
+                            e.printStackTrace();
+                        }
                 }
 
                 @Override
-                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
-                    Toast.makeText(getApplicationContext(), "Configuration change", Toast.LENGTH_SHORT).show();
-                }
+                public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {}
+
             }, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
+
     // Opening the rear-facing camera for use
-    private void openCamera() {
-        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-        Log.e(TAG, "is camera open");
-        try {
-            cameraId = manager.getCameraIdList()[0];
-            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
-            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-            assert map != null;
-            imageDimension = map.getOutputSizes(SurfaceTexture.class)[0];
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-                return;
-            }
-            manager.openCamera(cameraId, stateCallback, null);
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
+    private void openCamera() throws CameraAccessException {
+        CameraManager camMang = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        String id = camMang.getCameraIdList()[0];
+        CameraCharacteristics characteristics = camMang.getCameraCharacteristics(id);
+        StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+        measurements = map.getOutputSizes(SurfaceTexture.class)[0];
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERM);
+            return;
         }
-        Log.e(TAG, "openCamera X");
-    }
-    protected void updatePreview() {
-        if (null == cameraDevice) {
-            Log.e(TAG, "updatePreview error, return");
-        }
-        captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-        captureRequestBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH);
-        try {
-            cameraCaptureSessions.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
-    }
-    private void closeCamera() {
-        if (null != cameraDevice) {
-            cameraDevice.close();
-            cameraDevice = null;
-        }
+        camMang.openCamera(id, stCallBack, null);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                // close the app
-                Toast.makeText(this, "Sorry!!!, you can't use this app without granting permission", Toast.LENGTH_LONG).show();
-                finish();
-            }
+        if (requestCode == CAMERA_PERM && grantResults[0] == PackageManager.PERMISSION_DENIED) {
+            Toast.makeText(this, "Cannot operate without permissions", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e(TAG, "onResume");
-        startBackgroundThread();
-        if (textureView.isAvailable()) {
-            openCamera();
-        } else {
-            textureView.setSurfaceTextureListener(textureListener);
-        }
-    }
-    @Override
-    protected void onPause() {
-        Log.e(TAG, "onPause");
-        closeCamera();
-        stopBackgroundThread();
-        super.onPause();
-    }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-}
-
-class HeartR
-{
-    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-    int heartrate = HeartRate.hrtratebpm;
-
-//    int
 }

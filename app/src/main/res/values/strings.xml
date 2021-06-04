@@ -35,6 +35,7 @@
     <string name="scale_it_from_0_5">Scale it from 0-5</string>
     <string name="_00">00</string>
     <string name="heart_rate_instructions">Place your finger on the camera lens, and try not to move it</string>
+    <string name="upload">Upload</string>
     <string-array name="symptoms_array">
         <item>Nausea</item>
         <item>Headache</item>

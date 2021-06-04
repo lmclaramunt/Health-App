@@ -46,8 +46,9 @@
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
         android:layout_marginBottom="20dp"
-        android:text="@string/upload_signs"
+        android:text="@string/upload"
         android:textAllCaps="false"
+        android:onClick="uploadMeasures"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
