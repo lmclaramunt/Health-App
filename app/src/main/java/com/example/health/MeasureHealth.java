@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.Sensor;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -15,7 +14,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,20 +25,20 @@ import java.util.Date;
  * In this activity user measures heart & respiratory rate
  * Stores resutls in SQLite database
  */
-public class Health_Rates extends AppCompatActivity  {
+public class MeasureHealth extends AppCompatActivity  {
     private Database db;        //SQLite
     public static final int GET_SYMPTOMS_LIST = 0;
     public static final int GET_HEART_RATE = 1;
     private TextView txtHeartRate, txtRespRate, txtSymptoms;
-    private float respRate = 8;
-    private int bpm = 68;
+    private float respRate = 0;
+    private int bpm = 0;
     private ArrayList<Symptom> symptoms;
     
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_health_rates);
+        setContentView(R.layout.activity_measure);
         setTitle("Measurements");
         txtHeartRate = findViewById(R.id.txtHeartRate);
         txtRespRate = findViewById(R.id.txtRespRate);
@@ -53,7 +51,7 @@ public class Health_Rates extends AppCompatActivity  {
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         respRate = intent.getFloatExtra(RespRate.RESP_RATE, 0);
-                        txtRespRate.setText("%.2f", TextView.BufferType.valueOf(Float.toString( respRate)));
+                        txtRespRate.setText(Integer.toString(Math.round(respRate)));
                     }
                 }, new IntentFilter(RespRate.GET_RESP_RATE)
         );
@@ -81,7 +79,7 @@ public class Health_Rates extends AppCompatActivity  {
      * @param view - View
      */
     public void measureResp(View view) {
-        startService(new Intent(Health_Rates.this, RespRate.class));
+        startService(new Intent(MeasureHealth.this, RespRate.class));
     }
 
     /**
@@ -101,6 +99,7 @@ public class Health_Rates extends AppCompatActivity  {
      * @param resultCode - result code from activity, e.g. OK/CANCEL
      * @param data - data return from activity
      */
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -117,6 +116,10 @@ public class Health_Rates extends AppCompatActivity  {
                 }
                 txtSymptoms.setText(sym.toString());
             }
+        }if(requestCode == GET_HEART_RATE && resultCode == Activity.RESULT_OK) {
+            assert data != null;
+            bpm = data.getIntExtra(HeartRate.BPM, 0);
+            txtHeartRate.setText(Integer.toString(bpm));
         }
     }
 
@@ -138,16 +141,25 @@ public class Health_Rates extends AppCompatActivity  {
      * @param view - for button
      */
     public void uploadMeasures(View view) {
-        Date currentTime = Calendar.getInstance().getTime();
-        int[] symptomsRatings = new int[10];
-        String[] symptomsNames = getResources().getStringArray(R.array.symptoms_array);
-        for(int i=0; i < 10; i++){
-            symptomsRatings[i] = getSymptomRating(symptomsNames[i]);
+        if (bpm == 0) {
+            Toast.makeText(MeasureHealth.this, "Heart Rate is missing",
+                    Toast.LENGTH_SHORT).show();
+        } else if (respRate == 0) {
+            Toast.makeText(MeasureHealth.this, "Respiratory Rate is missing",
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Date currentTime = Calendar.getInstance().getTime();
+            int[] symptomsRatings = new int[10];
+            String[] symptomsNames = getResources().getStringArray(R.array.symptoms_array);
+            for (int i = 0; i < 10; i++) {
+                symptomsRatings[i] = getSymptomRating(symptomsNames[i]);
+            }
+            boolean inserted = db.insertData(currentTime.toString(), bpm, Math.round(respRate), symptomsRatings[0], symptomsRatings[1],
+                    symptomsRatings[2], symptomsRatings[3], symptomsRatings[4], symptomsRatings[5], symptomsRatings[6],
+                    symptomsRatings[7], symptomsRatings[8], symptomsRatings[9]);
+            String message = (inserted) ? "Data saved successfully!" : "Error occurred, could not save data";
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         }
-        boolean inserted = db.insertData(currentTime.toString(), bpm, Math.round(respRate), symptomsRatings[0], symptomsRatings[1],
-                symptomsRatings[2],symptomsRatings[3], symptomsRatings[4], symptomsRatings[5], symptomsRatings[6],
-                symptomsRatings[7], symptomsRatings[8], symptomsRatings[9]);
-        String message = (inserted) ? "Data saved successfully!" : "Error occurred, could not save data";
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        finish();
     }
 }

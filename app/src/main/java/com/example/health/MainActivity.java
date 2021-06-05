@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
      * @param view - for button
      */
     public void launchHealth(View view) {
-        Intent intent = new Intent(this, Health_Rates.class);
+        Intent intent = new Intent(this, MeasureHealth.class);
         startActivity(intent);
     }
 

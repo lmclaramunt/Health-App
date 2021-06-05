@@ -28,14 +28,16 @@
         <activity android:name=".ReviewData"
             android:launchMode="singleTop"
             android:parentActivityName=".MainActivity" />
-        <activity android:name=".HeartRate" />
+        <activity android:name=".HeartRate"
+            android:launchMode="singleTop"
+            android:parentActivityName=".MeasureHealth"/>
         <activity
             android:name=".AddEditSymptom"
             android:theme="@style/AppTheme.CustomTheme" />
         <activity
             android:name=".SymptomsList"
             android:launchMode="singleTop"
-            android:parentActivityName=".Health_Rates" />
+            android:parentActivityName=".MeasureHealth" />
 
         <service
             android:name=".RespRate"
@@ -43,7 +45,7 @@
             android:exported="true" />
 
         <activity
-            android:name=".Health_Rates"
+            android:name=".MeasureHealth"
             android:launchMode="singleTop"
             android:parentActivityName=".MainActivity" />
         <activity android:name=".MainActivity">
